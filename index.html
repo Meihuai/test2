@@ -3,44 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>胜任力与性格探索器 Pro</title>
-    <!-- 引入 Tailwind CSS (样式库) -->
+    <title>胜任力与性格探索器 Pro (独立运行版)</title>
+    <!-- Tailwind CSS (Play CDN - 仅用于开发和测试，生产环境请预编译) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 引入 React 和 ReactDOM (核心库) -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- React & ReactDOM (官方稳定 CDN) -->
+    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
     
-    <!-- 引入 Babel (用于在浏览器中解析 JSX) -->
+    <!-- Babel (用于解析 JSX) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- 引入 Lucide React Icons (图标库) -->
-    <script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
-
     <style>
-        /* 打印样式优化 */
         @media print {
             body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .no-print { display: none !important; }
         }
-        /* 简单的淡入动画 */
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* 防止未加载时的闪烁 */
+        #root:empty::before {
+            content: '正在初始化应用...';
+            display: block;
+            text-align: center;
+            padding: 20px;
+            color: #94a3b8;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
     <div id="root"></div>
 
     <script type="text/babel">
-        // 从全局对象中获取 React Hooks 和图标组件
-        const { useState, useMemo, useEffect } = React;
-        const { 
-            Sparkles, ArrowRight, Activity, Zap, Heart, Brain, Target, 
-            RefreshCw, CheckCircle, HelpCircle, Briefcase, Users, Star, 
-            MapPin, Coffee, Shield, Share2, Download, Link: LinkIcon, Printer 
-        } = lucideReact;
+        // --- 1. 内置图标组件 (移除外部依赖，彻底解决报错) ---
+        const IconWrapper = ({ children, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
 
-        // --- 1. 核心数据结构与扩展维度定义 ---
+        const Sparkles = (props) => <IconWrapper {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 9v4"/></IconWrapper>;
+        const ArrowRight = (props) => <IconWrapper {...props}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></IconWrapper>;
+        const Activity = (props) => <IconWrapper {...props}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></IconWrapper>;
+        const RefreshCw = (props) => <IconWrapper {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></IconWrapper>;
+        const CheckCircle = (props) => <IconWrapper {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></IconWrapper>;
+        const Briefcase = (props) => <IconWrapper {...props}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></IconWrapper>;
+        const Star = (props) => <IconWrapper {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></IconWrapper>;
+        const Heart = (props) => <IconWrapper {...props}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></IconWrapper>;
+        const LinkIcon = (props) => <IconWrapper {...props}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></IconWrapper>;
+        const Printer = (props) => <IconWrapper {...props}><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></IconWrapper>;
+
+        // --- 2. 主逻辑 ---
+        const { useState, useMemo, useEffect } = React;
+        
+        // --- 数据结构 ---
         const DIMENSIONS = {
             EXECUTION: { 
                 id: 'EXECUTION', 
@@ -99,7 +115,7 @@
             }
         };
 
-        // --- 2. 扩展题库 ---
+        // --- 题库 ---
         const MAIN_QUESTIONS = [
             { id: 'e1', dimension: 'EXECUTION', text: '即使没有人监督，我也能严格按照自己制定的时间表完成任务。' },
             { id: 'e2', dimension: 'EXECUTION', text: '我非常讨厌迟到或任务延期，这会让我感到极度焦虑。' },
@@ -257,7 +273,9 @@
                 setCurrentQIndex(0);
                 setGameState('test');
                 setIsSharedView(false);
-                window.history.replaceState({}, document.title, window.location.pathname);
+                if (window.history.replaceState) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
             };
 
             const handleAnswer = (value) => {
@@ -311,14 +329,16 @@
                 const sorted = [...calculated].sort((a, b) => b.score - a.score);
                 const top3 = sorted.slice(0, 3);
                 
-                const top2Keys = [top3[0].id, top3[1].id].sort().join('_');
                 let personaTitle = "全能潜力者";
-                if (top3[0].id === 'INNOVATION' && top3[1].id === 'EXECUTION') personaTitle = "务实的梦想家";
-                else if (top3[0].id === 'STRATEGY' && top3[1].id === 'EXECUTION') personaTitle = "战略推进者";
-                else if (top3[0].id === 'COMMUNICATION' && top3[1].id === 'RESILIENCE') personaTitle = "温情的守护者";
-                else if (top3[0].id === 'RESILIENCE' && top3[1].id === 'STRATEGY') personaTitle = "冷静的棋手";
-                else if (top3[0].id === 'INNOVATION' && top3[1].id === 'COMMUNICATION') personaTitle = "魅力布道师";
-                else personaTitle = `${top3[0].traits[0]}且${top3[1].traits[0]}的${top3[0].name.slice(-3)}`;
+                if (top3.length >= 2) {
+                    const top2Keys = [top3[0].id, top3[1].id].sort().join('_');
+                    if (top3[0].id === 'INNOVATION' && top3[1].id === 'EXECUTION') personaTitle = "务实的梦想家";
+                    else if (top3[0].id === 'STRATEGY' && top3[1].id === 'EXECUTION') personaTitle = "战略推进者";
+                    else if (top3[0].id === 'COMMUNICATION' && top3[1].id === 'RESILIENCE') personaTitle = "温情的守护者";
+                    else if (top3[0].id === 'RESILIENCE' && top3[1].id === 'STRATEGY') personaTitle = "冷静的棋手";
+                    else if (top3[0].id === 'INNOVATION' && top3[1].id === 'COMMUNICATION') personaTitle = "魅力布道师";
+                    else personaTitle = `${top3[0].traits[0]}且${top3[1].traits[0]}的${top3[0].name.slice(-3)}`;
+                }
 
                 return { all: calculated, sorted, top3, personaTitle };
             }, [scores, gameState]);
